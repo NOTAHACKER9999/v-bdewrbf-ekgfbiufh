@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexProxy</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0f; color: #fff; height: 100vh; display: flex; flex-direction: column; }
+    #topbar { background: #111; border-bottom: 1px solid #222; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+    #topbar h1 { font-size: 15px; font-weight: 700; color: #a78bfa; white-space: nowrap; }
+    #urlform { flex: 1; display: flex; gap: 8px; }
+    #urlinput { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 14px; color: #fff; font-size: 14px; outline: none; }
+    #urlinput:focus { border-color: rgba(167,139,250,0.5); }
+    #gobtn { background: #7c3aed; color: #fff; border: none; border-radius: 10px; padding: 8px 18px; font-weight: 600; cursor: pointer; font-size: 14px; }
+    #gobtn:hover { background: #6d28d9; }
+    #frame { flex: 1; border: none; width: 100%; }
+    #placeholder { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #444; }
+    #placeholder h2 { font-size: 22px; color: #666; }
+    #placeholder p { font-size: 14px; max-width: 400px; text-align: center; }
+    #quicklinks { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+    .ql { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 14px; color: #888; cursor: pointer; font-size: 13px; }
+    .ql:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  </style>
+</head>
+<body>
+  <div id="topbar">
+    <h1>⚡ NexProxy</h1>
+    <form id="urlform" onsubmit="go(event)">
+      <input id="urlinput" type="text" placeholder="Enter URL..." autocomplete="off" spellcheck="false" />
+      <button id="gobtn" type="submit">Go</button>
+    </form>
+  </div>
+  <div id="placeholder">
+    <h2>Enter a URL to start</h2>
+    <p>NexProxy routes your traffic through Vercel's Edge network with full header rewriting and service worker interception.</p>
+    <div id="quicklinks">
+      <span class="ql" onclick="navigate('https://google.com')">Google</span>
+      <span class="ql" onclick="navigate('https://youtube.com')">YouTube</span>
+      <span class="ql" onclick="navigate('https://discord.com')">Discord</span>
+      <span class="ql" onclick="navigate('https://reddit.com')">Reddit</span>
+      <span class="ql" onclick="navigate('https://github.com')">GitHub</span>
+    </div>
+  </div>
+  <iframe id="frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-top-navigation"></iframe>
+
+  <script>
+    const PROXY = "/nexproxy/";
+    const XOR = 0x5a;
+
+    function encode(url) {
+      return btoa([...url].map(c => String.fromCharCode(c.charCodeAt(0) ^ XOR)).join(""));
+    }
+
+    function navigate(rawUrl) {
+      let url = rawUrl.trim();
+      if (!url.startsWith("http://") && !url.startsWith("https://")) url = "https://" + url;
+      document.getElementById("urlinput").value = url;
+      const encoded = encode(url);
+      const frame = document.getElementById("frame");
+      const placeholder = document.getElementById("placeholder");
+      placeholder.style.display = "none";
+      frame.style.display = "block";
+      frame.src = PROXY + encoded;
+    }
+
+    function go(e) {
+      e.preventDefault();
+      navigate(document.getElementById("urlinput").value);
+    }
+
+    // Register service worker for full interception
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).then(reg => {
+        console.log("[NexProxy] SW registered", reg.scope);
+      }).catch(err => console.warn("[NexProxy] SW failed:", err));
+    }
+  </script>
+</body>
+</html>
