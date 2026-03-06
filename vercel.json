@@ -1,40 +1,44 @@
 {
   "version": 2,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/sw.js",
-      "dest": "/public/sw.js"
+      "source": "/sw.js",
+      "destination": "/public/sw.js"
     },
     {
-      "src": "/nexproxy/(.*)",
-      "dest": "/api/proxy.js?path=$1"
+      "source": "/nexproxy/:path*",
+      "destination": "/api/proxy"
     },
     {
-      "src": "/(.*)",
-      "dest": "/public/$1"
-    }
-  ],
-  "functions": {
-    "api/proxy.js": {
-      "runtime": "@vercel/edge",
-      "maxDuration": 10,
-      "memory": 1024
+      "source": "/ws/:path*",
+      "destination": "/api/ws"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/public/:path*"
     }
   ],
   "headers": [
     {
       "source": "/sw.js",
       "headers": [
-        { "key": "Service-Worker-Allowed", "value": "/" },
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
       ]
     },
     {
-      "source": "/nexproxy/(.*)",
+      "source": "/api/:path*",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "*" }
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
       ]
     }
   ]
