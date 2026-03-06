@@ -10,10 +10,6 @@
       "dest": "/api/proxy.js?path=$1"
     },
     {
-      "src": "/ws/(.*)",
-      "dest": "/api/ws.js?path=$1"
-    },
-    {
       "src": "/(.*)",
       "dest": "/public/$1"
     }
@@ -23,51 +19,22 @@
       "runtime": "@vercel/edge",
       "maxDuration": 10,
       "memory": 1024
-    },
-    "api/ws.js": {
-      "runtime": "@vercel/edge",
-      "maxDuration": 10,
-      "memory": 1024
     }
   ],
   "headers": [
     {
       "source": "/sw.js",
       "headers": [
-        {
-          "key": "Service-Worker-Allowed",
-          "value": "/"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
+        { "key": "Service-Worker-Allowed", "value": "/" },
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
       ]
     },
     {
       "source": "/nexproxy/(.*)",
       "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET,POST,PUT,DELETE,OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "*"
-        }
-      ]
-    },
-    {
-      "source": "/ws/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "*" }
       ]
     }
   ]
