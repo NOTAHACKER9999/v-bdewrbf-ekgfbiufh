@@ -6,16 +6,11 @@ try{
 
 const encoded=req.query.url;
 
-if(!encoded) return res.status(400).send("missing url");
-
 const url=Buffer.from(encoded,"base64").toString();
 
 const response=await fetch(url,{
 method:req.method,
-headers:{
-"user-agent":req.headers["user-agent"]||"",
-"accept":req.headers["accept"]||"*/*"
-}
+headers:req.headers
 });
 
 const type=response.headers.get("content-type")||"";
@@ -24,7 +19,9 @@ let body;
 
 if(type.includes("text/html")){
 
-body=rewriteHTML(await response.text());
+const html=await response.text();
+
+body=rewriteHTML(html,url);
 
 }else{
 
@@ -36,7 +33,7 @@ res.setHeader("content-type",type);
 
 res.send(Buffer.from(body));
 
-}catch(e){
+}catch{
 
 res.status(500).send("proxy error");
 
