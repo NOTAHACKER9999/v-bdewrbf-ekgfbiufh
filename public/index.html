@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexProxy</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0f;color:#fff;height:100vh;display:flex;flex-direction:column}
+    #bar{background:#111;border-bottom:1px solid #222;padding:10px 16px;display:flex;align-items:center;gap:10px}
+    #bar h1{font-size:15px;font-weight:700;color:#a78bfa;white-space:nowrap}
+    #form{flex:1;display:flex;gap:8px}
+    #inp{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 14px;color:#fff;font-size:14px;outline:none}
+    #inp:focus{border-color:rgba(167,139,250,.5)}
+    #btn{background:#7c3aed;color:#fff;border:none;border-radius:10px;padding:8px 18px;font-weight:600;cursor:pointer;font-size:14px}
+    #frame{flex:1;border:none;width:100%;display:none}
+    #ph{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#444;text-align:center;padding:20px}
+    #ph h2{font-size:22px;color:#666}
+    #ph p{font-size:14px;max-width:400px}
+    .ql-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+    .ql{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 14px;color:#888;cursor:pointer;font-size:13px}
+    .ql:hover{background:rgba(255,255,255,.1);color:#fff}
+  </style>
+</head>
+<body>
+  <div id="bar">
+    <h1>⚡ NexProxy</h1>
+    <form id="form" onsubmit="go(event)">
+      <input id="inp" type="text" placeholder="Enter any URL..." autocomplete="off" spellcheck="false"/>
+      <button id="btn" type="submit">Go</button>
+    </form>
+  </div>
+  <div id="ph">
+    <h2>Enter a URL to start</h2>
+    <p>Traffic is routed through Vercel's Edge network with full header rewriting and service worker interception.</p>
+    <div class="ql-row">
+      <span class="ql" onclick="nav('https://google.com')">Google</span>
+      <span class="ql" onclick="nav('https://youtube.com')">YouTube</span>
+      <span class="ql" onclick="nav('https://discord.com')">Discord</span>
+      <span class="ql" onclick="nav('https://reddit.com')">Reddit</span>
+      <span class="ql" onclick="nav('https://github.com')">GitHub</span>
+    </div>
+  </div>
+  <iframe id="frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-top-navigation"></iframe>
+  <script>
+    const P="/nexproxy/",K=0x5a;
+    function enc(u){return btoa([...u].map(c=>String.fromCharCode(c.charCodeAt(0)^K)).join(""))}
+    function nav(raw){
+      let u=raw.trim();
+      if(!u.startsWith("http://")&&!u.startsWith("https://"))u="https://"+u;
+      document.getElementById("inp").value=u;
+      document.getElementById("ph").style.display="none";
+      const f=document.getElementById("frame");
+      f.style.display="block";
+      f.src=P+enc(u);
+    }
+    function go(e){e.preventDefault();nav(document.getElementById("inp").value)}
+    if("serviceWorker" in navigator){
+      navigator.serviceWorker.register("/sw.js",{scope:"/"}).catch(e=>console.warn("SW:",e));
+    }
+  </script>
+</body>
+</html>
