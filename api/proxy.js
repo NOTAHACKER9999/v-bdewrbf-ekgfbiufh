@@ -1,4 +1,3 @@
-import { decodeURL } from "../lib/encoder.js";
 import { rewriteHTML } from "../lib/rewriter.js";
 
 export default async function handler(req,res){
@@ -7,9 +6,9 @@ try{
 
 const encoded=req.query.url;
 
-const decrypted=Buffer.from(encoded,"base64").toString();
+if(!encoded) return res.status(400).send("missing url");
 
-const url=decodeURL(decrypted);
+const url=Buffer.from(encoded,"base64").toString();
 
 const response=await fetch(url,{
 method:req.method,
