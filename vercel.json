@@ -20,16 +20,16 @@
   ],
   "functions": {
     "api/proxy.js": {
-      "runtime": "edge",
+      "runtime": "@vercel/edge",
       "maxDuration": 10,
       "memory": 1024
     },
     "api/ws.js": {
-      "runtime": "edge",
+      "runtime": "@vercel/edge",
       "maxDuration": 10,
       "memory": 1024
     }
-  },
+  ],
   "headers": [
     {
       "source": "/sw.js",
