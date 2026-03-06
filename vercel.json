@@ -7,11 +7,11 @@
     },
     {
       "src": "/nexproxy/(.*)",
-      "dest": "/api/proxy?path=$1"
+      "dest": "/api/proxy.js?path=$1"
     },
     {
       "src": "/ws/(.*)",
-      "dest": "/api/ws?path=$1"
+      "dest": "/api/ws.js?path=$1"
     },
     {
       "src": "/(.*)",
@@ -20,10 +20,14 @@
   ],
   "functions": {
     "api/proxy.js": {
-      "runtime": "edge"
+      "runtime": "edge",
+      "maxDuration": 10,
+      "memory": 1024
     },
     "api/ws.js": {
-      "runtime": "edge"
+      "runtime": "edge",
+      "maxDuration": 10,
+      "memory": 1024
     }
   },
   "headers": [
@@ -36,7 +40,7 @@
         },
         {
           "key": "Cache-Control",
-          "value": "no-cache"
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
     }
