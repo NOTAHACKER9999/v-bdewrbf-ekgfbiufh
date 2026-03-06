@@ -14,6 +14,19 @@ function rewriteHTML(html,base){
            .replace(/(href|src|action|poster|data-src)="([^"]*)"/gi,(m,a,u)=>{
              const abs=resolve(u,base);
              return `${a}="${encode(abs)}"`;
+           })
+           // rewrite meta refresh
+           .replace(/<meta\s+http-equiv=["']refresh["']\s+content=["']([^"']+)["']\s*\/?>/gi,(m,content)=>{
+             const parts=content.split(";");
+             if(parts.length>1){
+               let urlPart=parts[1].trim();
+               if(urlPart.toLowerCase().startsWith("url=")){
+                 const url=urlPart.substring(4);
+                 const abs=resolve(url,base);
+                 return `<meta http-equiv="refresh" content="${parts[0]};url=${encode(abs)}">`;
+               }
+             }
+             return m;
            });
   return html;
 }
@@ -44,7 +57,7 @@ export default async function handler(req,res){
       redirect:"manual"
     });
 
-    /* handle redirects */
+    // handle HTTP redirects
     if(response.status>=300 && response.status<400){
       const loc=response.headers.get("location");
       if(loc){
@@ -60,15 +73,19 @@ export default async function handler(req,res){
     if(type.includes("text/html")){
       let html=await response.text();
       html=rewriteHTML(html,url);
+
       const inject=`<script>
 function encode(u){return "/proxy?url="+btoa(u);}
 function resolve(u){try{return new URL(u,location.href).href}catch{return u}}
+/* trap all link clicks */
 document.addEventListener("click",e=>{
   const a=e.target.closest("a"); if(!a) return;
   const href=a.getAttribute("href"); if(!href) return;
   if(href.startsWith("javascript:")) return;
-  e.preventDefault(); location.href=encode(resolve(href));
+  e.preventDefault();
+  location.href=encode(resolve(href));
 });
+/* trap forms */
 document.addEventListener("submit",e=>{
   const form=e.target; if(!form.action) return;
   e.preventDefault();
@@ -76,17 +93,21 @@ document.addEventListener("submit",e=>{
   const params=new URLSearchParams(data);
   location.href=encode(form.action+"?"+params.toString());
 });
-const push=history.pushState;
-history.pushState=function(a,b,url){if(url) url=encode(resolve(url)); return push.call(this,a,b,url)};
+/* trap history API */
+const push=history.pushState; history.pushState=function(a,b,url){if(url) url=encode(resolve(url)); return push.call(this,a,b,url)};
+const replace=history.replaceState; history.replaceState=function(a,b,url){if(url) url=encode(resolve(url)); return replace.call(this,a,b,url)};
+/* trap direct window.location changes */
+Object.defineProperty(window,"location",{set:function(url){window.top.location.href=encode(resolve(url));},get:function(){return window.top.location;}});
 </script>`;
+
       html=html.replace("<head>","<head>"+inject);
       body=html;
-    }
-    else if(type.includes("text/css")){
+
+    } else if(type.includes("text/css")){
       const css=await response.text();
       body=rewriteCSS(css,url);
-    }
-    else{
+
+    } else {
       body=await response.arrayBuffer();
     }
 
