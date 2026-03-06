@@ -1,8 +1,0 @@
-{
-  "routes": [
-    { "src": "^/proxy$", "dest": "/api/proxy" },
-    { "src": "^/proxy\\?(.*)", "dest": "/api/proxy?$1" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/public/$1" }
-  ]
-}
