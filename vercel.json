@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/sw.js",
+      "dest": "/public/sw.js"
+    },
+    {
+      "src": "/nexproxy/(.*)",
+      "dest": "/api/proxy?path=$1"
+    },
+    {
+      "src": "/ws/(.*)",
+      "dest": "/api/ws?path=$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ],
+  "functions": {
+    "api/proxy.js": {
+      "runtime": "edge"
+    },
+    "api/ws.js": {
+      "runtime": "edge"
+    }
+  },
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    }
+  ]
+}
